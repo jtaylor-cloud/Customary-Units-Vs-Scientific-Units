@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customary vs Metric Units</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --customary: #e86c2c;
+    --metric: #2c7be8;
+    --bg: #f5f0e8;
+    --card: #fffdf8;
+    --text: #2a2418;
+    --accent: #f0c040;
+    --green: #4caf50;
+    --water: rgba(80, 160, 240, 0.7);
+    --water-dark: rgba(40, 100, 200, 0.85);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, var(--customary), var(--metric));
+    color: white;
+    text-align: center;
+    padding: 2rem 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.15) 0%, transparent 60%);
+  }
+  header h1 { font-family: 'Fredoka One', cursive; font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: 1px; }
+  header p { font-size: 1.1rem; opacity: 0.9; margin-top: 0.5rem; }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+  }
+  nav button {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.5rem 1.2rem;
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+  }
+  nav button.active, nav button:hover { background: var(--metric); color: white; border-color: var(--metric); }
+
+  .section { display: none; padding: 2rem 1rem; max-width: 1000px; margin: 0 auto; }
+  .section.active { display: block; }
+
+  h2 { font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 1.5rem; text-align: center; }
+
+  /* Reference Cards */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-top: 5px solid var(--customary);
+  }
+  .card.metric { border-top-color: var(--metric); }
+  .card h3 { font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin-bottom: 1rem; }
+  .card.customary h3 { color: var(--customary); }
+  .card.metric h3 { color: var(--metric); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #eee; }
+  td:first-child { font-weight: 700; color: #555; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Liquid Demo */
+  .liquid-demo {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+  .liquid-demo h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center; color: var(--metric); }
+
+  /* Controls row */
+  .controls { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; align-items: center; }
+  .controls label { font-weight: 700; }
+  .controls select { font-family: 'Nunito', sans-serif; padding: 0.4rem 0.8rem; border-radius: 8px; border: 2px solid #ddd; font-size: 1rem; }
+  .pour-btn {
+    background: var(--metric);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pour-btn:hover { background: #1a5cb8; transform: scale(1.05); }
+  .pour-btn:disabled { background: #aaa; cursor: default; transform: none; }
+
+  /* Faucet flow control */
+  .faucet-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .faucet-label { font-weight: 800; font-size: 1rem; }
+  .flow-track {
+    position: relative;
+    width: 220px;
+    height: 36px;
+    background: #e8f0fe;
+    border-radius: 18px;
+    border: 2px solid #c0d0f0;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+  }
+  .flow-fill {
+    height: 100%;
+    border-radius: 18px;
+    background: linear-gradient(90deg, #2c7be8, #50c0ff);
+    transition: width 0.1s;
+    pointer-events: none;
+  }
+  .flow-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 3px solid var(--metric);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .flow-thumb:active { cursor: grabbing; }
+  .flow-pct { font-weight: 800; min-width: 40px; color: var(--metric); }
+
+  /* Faucet drip animation */
+  .faucet-svg { display: block; }
+  .drip { animation: drip 0.8s infinite; opacity: 0; }
+  .drip:nth-child(2) { animation-delay: 0.27s; }
+  .drip:nth-child(3) { animation-delay: 0.54s; }
+  @keyframes drip { 0%{opacity:0;transform:translateY(0)} 20%{opacity:1} 80%{opacity:1} 100%{opacity:0;transform:translateY(18px)} }
+
+  .containers-row {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    padding: 0.5rem 0 1rem;
+  }
+  .container-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .container-wrap .ctitle { font-weight: 800; font-size: 0.85rem; text-align: center; }
+  .container-wrap .clabel { color: #888; font-size: 0.78rem; font-weight: 700; text-align: center; }
+  .overflow-badge {
+    background: #ff3b30;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 20px;
+    display: none;
+    animation: pulse 0.6s infinite alternate;
+  }
+  @keyframes pulse { from{opacity:1} to{opacity:0.5} }
+
+  /* SVG vessel */
+  .vessel-svg { display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
+
+  .comparison-note {
+    text-align: center;
+    background: linear-gradient(135deg, #e8f4fd, #fef3e8);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  /* Fun facts / visual comparisons */
+  .fun-facts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .fun-fact-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem 0.8rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    text-align: center;
+    border-bottom: 4px solid var(--metric);
+    transition: transform 0.2s;
+  }
+  .fun-fact-card:hover { transform: translateY(-3px); }
+  .fun-fact-card svg { display: block; margin: 0 auto 0.5rem; }
+  .fun-fact-card .fact-title { font-family: 'Fredoka One', cursive; font-size: 1rem; margin-bottom: 0.3rem; }
+  .fun-fact-card .fact-metric { font-size: 0.78rem; color: var(--metric); font-weight: 800; }
+  .fun-fact-card .fact-custom { font-size: 0.78rem; color: var(--customary); font-weight: 800; }
+
+  /* Mass Demo */
+  .mass-demo {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+  .scale-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1.5rem 0 0.5rem;
+  }
+  .scale-beam {
+    width: 300px;
+    height: 12px;
+    background: #888;
+    border-radius: 6px;
+    position: relative;
+    transition: transform 0.6s ease;
+    transform-origin: center center;
+  }
+  .scale-post {
+    width: 8px;
+    height: 80px;
+    background: #999;
+    margin: 0 auto;
+    border-radius: 4px;
+  }
+  .scale-base {
+    width: 120px;
+    height: 14px;
+    background: #bbb;
+    border-radius: 7px;
+    margin: 0 auto;
+  }
+  .scale-pan {
+    width: 80px;
+    height: 10px;
+    background: #ccc;
+    border-radius: 5px;
+    position: absolute;
+    bottom: -50px;
+  }
+  .scale-pan.left { left: 10px; }
+  .scale-pan.right { right: 10px; }
+  .pan-label {
+    position: absolute;
+    bottom: -70px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-align: center;
+    width: 80px;
+    white-space: nowrap;
+  }
+  .pan-label.left  { left: 10px; color: var(--customary); }
+  .pan-label.right { right: 10px; color: var(--metric); }
+  .pan-total {
+    position: absolute;
+    bottom: -90px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-align: center;
+    width: 80px;
+    white-space: nowrap;
+  }
+  .pan-total.left  { left: 10px; color: var(--customary); }
+  .pan-total.right { right: 10px; color: var(--metric); }
+  .pan-chain {
+    position: absolute;
+    width: 1px;
+    height: 50px;
+    background: #999;
+    bottom: -50px;
+  }
+  .pan-chain.left { left: 30px; }
+  .pan-chain.right { right: 30px; }
+
+  /* Mass Lab */
+  .mass-objects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .mass-obj-card {
+    background: #fafafa;
+    border: 2px solid #e8e8e8;
+    border-radius: 14px;
+    padding: 0.75rem 0.5rem 0.5rem;
+    text-align: center;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+  .mass-obj-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); border-color: #ccc; }
+  .mass-obj-card .obj-icon { font-size: 2.6rem; line-height: 1.1; }
+  .mass-obj-card .obj-name { font-weight: 800; font-size: 0.82rem; margin: 0.3rem 0 0.15rem; }
+  .mass-obj-card .obj-mass { font-size: 0.72rem; color: #777; font-weight: 700; line-height: 1.4; }
+  .mass-obj-card .obj-btns { display: flex; gap: 5px; justify-content: center; margin-top: 0.5rem; flex-wrap: wrap; }
+  .obj-btn {
+    width: 30px; height: 30px;
+    border: none; border-radius: 50%;
+    font-size: 1.1rem; font-weight: 800;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Nunito', sans-serif;
+    line-height: 1;
+  }
+  .obj-btn.add-left  { background: var(--customary); color: white; width: 36px; height: 36px; font-size: 1.4rem; }
+  .obj-btn.add-right { background: var(--metric);    color: white; width: 36px; height: 36px; font-size: 1.4rem; }
+  .obj-btn.sub-left  { background: #fde8e8; color: var(--customary); border: 2px solid var(--customary); font-size: 0.9rem; }
+  .obj-btn.sub-right { background: #e8f0ff; color: var(--metric);    border: 2px solid var(--metric);    font-size: 0.9rem; }
+  .obj-btn:hover { transform: scale(1.18); }
+  .obj-btn:disabled { opacity: 0.25; cursor: default; transform: none; }
+  .obj-btn-labels { font-size: 0.62rem; color: #bbb; font-weight: 700; margin-top: 3px; display:flex; gap:5px; justify-content:center; }
+  .obj-btn-labels span { width:30px; text-align:center; }
+
+  /* Pan display */
+  .weight-items {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0.5rem 0 1rem;
+    align-items: flex-start;
+  }
+  .weight-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 170px;
+    max-width: 210px;
+  }
+  .weight-side h4 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; }
+  .weight-side h4.c { color: var(--customary); }
+  .weight-side h4.m { color: var(--metric); }
+  .pan-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    min-height: 80px;
+  }
+  .pan-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 5px 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    animation: popIn 0.2s ease;
+  }
+  @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+  .pan-item .pi-icon { font-size: 1.4rem; flex-shrink:0; }
+  .pan-item .pi-label { flex:1; }
+  .pan-item .pi-mass { color: #888; font-size: 0.72rem; white-space:nowrap; }
+
+  /* Unit toggle */
+  .unit-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+  .toggle-track {
+    width: 52px; height: 26px;
+    background: var(--customary);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+    border: none;
+    flex-shrink: 0;
+  }
+  .toggle-track.metric-mode { background: var(--metric); }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.3s;
+    pointer-events: none;
+  }
+  .toggle-track.metric-mode .toggle-thumb { left: 29px; }
+
+  /* Balance readout */
+  .balance-readout {
+    background: linear-gradient(135deg, #f8f4ff, #f0f7ff);
+    border-radius: 14px;
+    padding: 0.8rem 1.2rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-weight: 700;
+    width: 100%;
+    max-width: 320px;
+  }
+  .balance-readout .bal-status { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.3rem; }
+  .balance-readout .bal-detail { font-size: 0.83rem; color: #555; line-height: 1.6; }
+  .balance-readout .bal-equiv  { font-size: 0.82rem; color: var(--metric); margin-top: 0.4rem; font-style: italic; }
+
+  /* Challenge questions */
+  .challenge-box {
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+    border: 2px solid #f0c040;
+    border-radius: 16px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .challenge-box h4 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #b8860b; margin-bottom: 0.8rem; }
+  .challenge-q {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+  }
+  .challenge-hint {
+    font-size: 0.82rem;
+    color: #888;
+    font-style: italic;
+    margin-bottom: 0.6rem;
+  }
+  .challenge-reveal {
+    background: #fff;
+    border: 2px solid #f0c040;
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    color: #b8860b;
+    transition: all 0.2s;
+    margin-right: 0.5rem;
+  }
+  .challenge-reveal:hover { background: #fff8e1; }
+  .challenge-answer {
+    background: #e8f8e8;
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #2a7a2a;
+    display: none;
+    line-height: 1.5;
+  }
+  .challenge-next {
+    background: var(--metric);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .challenge-next:hover { background: #1a5cb8; }
+
+  /* Quiz */
+  .quiz-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+  }
+  .quiz-card p { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.2rem; line-height: 1.5; }
+  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .quiz-opt {
+    padding: 0.8rem;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    background: white;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+  }
+  .quiz-opt:hover { border-color: var(--metric); background: #f0f7ff; }
+  .quiz-opt.correct { background: #e8f8e8; border-color: var(--green); color: var(--green); }
+  .quiz-opt.wrong { background: #fde8e8; border-color: #e82c2c; color: #e82c2c; }
+  .quiz-feedback { margin-top: 1rem; font-weight: 700; padding: 0.8rem; border-radius: 8px; }
+  .quiz-feedback.correct { background: #e8f8e8; color: #2a7a2a; }
+  .quiz-feedback.wrong { background: #fde8e8; color: #7a2a2a; }
+  .score-display { text-align: center; font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--metric); margin: 1rem 0; }
+
+  .next-btn {
+    background: var(--customary);
+    color: white;
+    border: none;
+    padding: 0.7rem 2rem;
+    border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    display: none;
+    transition: all 0.2s;
+  }
+  .next-btn:hover { background: #c55018; }
+
+  /* Converter */
+  .converter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .converter-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .converter-card h3 { font-family: 'Fredoka One', cursive; margin-bottom: 1rem; color: var(--metric); }
+  .conv-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; flex-wrap: nowrap; min-width: 0; }
+  .conv-row input {
+    width: 0;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.5rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .conv-row input:focus { outline: none; border-color: var(--metric); }
+  .conv-arrow { font-size: 1.3rem; color: #aaa; flex-shrink: 0; }
+  .conv-result {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.5rem;
+    background: #f0f7ff;
+    border-radius: 8px;
+    font-weight: 800;
+    color: var(--metric);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .conv-label { font-size: 0.9rem; color: #666; font-weight: 700; flex-shrink: 0; }
+
+  @media (max-width: 600px) {
+    .quiz-options { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚖️ Customary vs Metric Units</h1>
+  <p>An interactive lesson — pour, compare, and discover!</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('intro')">📖 Reference</button>
+  <button onclick="showSection('liquid')">🥤 Liquid Lab</button>
+  <button onclick="showSection('mass')">⚖️ Mass Lab</button>
+  <button onclick="showSection('converter')">🔢 Converter</button>
+  <button onclick="showSection('quiz')">🧠 Quiz</button>
+</nav>
+
+<!-- INTRO / REFERENCE -->
+<div class="section active" id="intro">
+  <h2>📐 Quick Reference Guide</h2>
+  <div class="cards-grid">
+    <!-- Customary Length -->
+    <div class="card customary">
+      <h3>🇺🇸 Customary Length</h3>
+      <table>
+        <tr><td>1 foot (ft)</td><td>= 12 inches (in)</td></tr>
+        <tr><td>1 yard (yd)</td><td>= 3 feet = 36 inches</td></tr>
+        <tr><td>1 mile (mi)</td><td>= 1,760 yards = 5,280 ft</td></tr>
+      </table>
+    </div>
+    <!-- Metric Length -->
+    <div class="card metric">
+      <h3>🌍 Metric Length</h3>
+      <table>
+        <tr><td>1 cm</td><td>= 10 millimeters (mm)</td></tr>
+        <tr><td>1 decimeter (dm)</td><td>= 10 cm</td></tr>
+        <tr><td>1 meter (m)</td><td>= 100 cm = 10 dm</td></tr>
+        <tr><td>1 kilometer (km)</td><td>= 1,000 meters</td></tr>
+      </table>
+    </div>
+    <!-- Customary Capacity -->
+    <div class="card customary">
+      <h3>🇺🇸 Customary Capacity</h3>
+      <table>
+        <tr><td>1 pint (pt)</td><td>= 2 cups</td></tr>
+        <tr><td>1 quart (qt)</td><td>= 2 pints = 4 cups</td></tr>
+        <tr><td>1 gallon (gal)</td><td>= 4 quarts = 16 cups</td></tr>
+      </table>
+    </div>
+    <!-- Metric Capacity -->
+    <div class="card metric">
+      <h3>🌍 Metric Capacity</h3>
+      <table>
+        <tr><td>1 liter (L)</td><td>= 1,000 milliliters (mL)</td></tr>
+        <tr><td>10 deciliters (dL)</td><td>= 1 liter</td></tr>
+      </table>
+    </div>
+    <!-- Customary Weight -->
+    <div class="card customary">
+      <h3>🇺🇸 Customary Weight</h3>
+      <table>
+        <tr><td>1 pound (lb)</td><td>= 16 ounces (oz)</td></tr>
+        <tr><td>1 ton (T)</td><td>= 2,000 pounds</td></tr>
+      </table>
+    </div>
+    <!-- Metric Mass -->
+    <div class="card metric">
+      <h3>🌍 Metric Mass</h3>
+      <table>
+        <tr><td>1 gram (g)</td><td>= 1,000 milligrams (mg)</td></tr>
+        <tr><td>1 kilogram (kg)</td><td>= 1,000 grams</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="border-top-color: #9c27b0; max-width: 600px; margin: 0 auto;">
+    <h3 style="color: #9c27b0; font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin-bottom: 1rem;">🔁 Key Conversions</h3>
+    <table>
+      <tr><td>1 inch</td><td>≈ 2.54 cm</td></tr>
+      <tr><td>1 meter</td><td>≈ 39.37 inches ≈ 1.09 yards</td></tr>
+      <tr><td>1 mile</td><td>≈ 1.6 km</td></tr>
+      <tr><td>1 liter</td><td>≈ 1.06 quarts</td></tr>
+      <tr><td>1 gallon</td><td>≈ 3.8 liters</td></tr>
+      <tr><td>1 ounce</td><td>≈ 28 grams</td></tr>
+      <tr><td>1 kilogram</td><td>≈ 2.2 pounds</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- LIQUID LAB -->
+<div class="section" id="liquid">
+  <h2>🥤 Liquid Pouring Lab</h2>
+  <div class="liquid-demo">
+    <h3>Compare Volumes — Turn on the Faucet!</h3>
+
+    <!-- Unit picker -->
+    <div class="controls">
+      <div>
+        <label>Customary unit: </label>
+        <select id="custUnit" onchange="updateLiquid()">
+          <option value="tsp">Teaspoon (5 mL)</option>
+          <option value="tbsp">Tablespoon (15 mL)</option>
+          <option value="cup">Cup (237 mL)</option>
+          <option value="pint">Pint (473 mL)</option>
+          <option value="quart">Quart (946 mL)</option>
+          <option value="gallon">Gallon (3785 mL)</option>
+        </select>
+      </div>
+      <button class="pour-btn" style="background:#e82c2c" onclick="resetLiquid()">🗑 Reset</button>
+    </div>
+
+    <!-- Faucet flow control -->
+    <div class="faucet-row">
+      <!-- Animated faucet icon -->
+      <svg class="faucet-svg" width="32" height="40" viewBox="0 0 32 40">
+        <rect x="4" y="2" width="24" height="8" rx="3" fill="#888"/>
+        <rect x="12" y="10" width="8" height="10" rx="2" fill="#aaa"/>
+        <ellipse cx="16" cy="22" rx="4" ry="2" fill="#999"/>
+        <circle class="drip" cx="16" cy="27" r="3" fill="#50a0f0"/>
+        <circle class="drip" cx="16" cy="27" r="3" fill="#50a0f0" style="animation-delay:0.3s"/>
+        <circle class="drip" cx="16" cy="27" r="3" fill="#50a0f0" style="animation-delay:0.6s"/>
+      </svg>
+
+      <span class="faucet-label">Flow:</span>
+
+      <!-- Custom slider track -->
+      <div class="flow-track" id="flowTrack">
+        <div class="flow-fill" id="flowFill" style="width:0%"></div>
+        <div class="flow-thumb" id="flowThumb" style="left:0%">💧</div>
+      </div>
+
+      <span class="flow-pct" id="flowPct">0%</span>
+      <button class="pour-btn" id="flowToggle" onclick="toggleFlow()">▶ Start Flow</button>
+    </div>
+
+    <!-- Containers -->
+    <div class="containers-row" id="containersRow"></div>
+    <div class="comparison-note" id="compNote">Drag the flow slider, then hit Start Flow!</div>
+  </div>
+
+  <!-- Visual shape comparisons -->
+  <div style="background:white;border-radius:20px;padding:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,.08);">
+    <h3 style="font-family:'Fredoka One',cursive;color:var(--customary);font-size:1.5rem;margin-bottom:1rem;text-align:center;">🔍 Real-World Volume Comparisons</h3>
+    <div class="fun-facts-grid" id="funFactsGrid"></div>
+  </div>
+</div>
+
+<!-- MASS LAB -->
+<div class="section" id="mass">
+  <h2>⚖️ Mass Balance Lab</h2>
+
+  <!-- Challenge questions -->
+  <div class="challenge-box">
+    <h4>🧩 Challenge Question</h4>
+    <div class="challenge-q" id="challengeQ"></div>
+    <div class="challenge-hint" id="challengeHint"></div>
+    <button class="challenge-reveal" onclick="revealAnswer()">💡 Reveal Answer</button>
+    <button class="challenge-next" onclick="nextChallenge()">Next →</button>
+    <div class="challenge-answer" id="challengeAnswer"></div>
+  </div>
+
+  <div class="mass-demo">
+    <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--customary);text-align:center;margin-bottom:0.8rem;">Add real-world objects to each pan — watch the scale tip!</h3>
+
+    <!-- Unit display toggle -->
+    <div class="unit-toggle">
+      <span style="color:var(--customary)">🇺🇸 Customary</span>
+      <button class="toggle-track" id="unitToggle" onclick="toggleUnits()" aria-label="Toggle units">
+        <div class="toggle-thumb"></div>
+      </button>
+      <span style="color:var(--metric)">🌍 Metric</span>
+    </div>
+
+    <!-- Object cards grid -->
+    <div class="mass-objects-grid" id="massObjectsGrid"></div>
+
+    <!-- Scale + pans -->
+    <div class="weight-items">
+      <!-- Left pan items list -->
+      <div class="weight-side">
+        <h4 class="c">Left Pan</h4>
+        <div class="pan-items" id="cBoxes"></div>
+      </div>
+
+      <!-- Scale visual -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;flex:1;min-width:260px;">
+        <div class="scale-container" style="position:relative;">
+          <div class="scale-beam" id="scaleBeam">
+            <div class="pan-chain left"></div>
+            <div class="pan-chain right"></div>
+            <div class="scale-pan left"></div>
+            <div class="scale-pan right"></div>
+          </div>
+          <div class="scale-post"></div>
+          <div class="scale-base"></div>
+          <!-- Pan labels and totals sit below the beam ends, outside rotation -->
+          <div style="position:relative;width:300px;height:36px;margin-top:4px;">
+            <div style="position:absolute;left:0;width:100px;text-align:center;">
+              <div style="font-family:'Fredoka One',cursive;font-size:0.82rem;color:var(--customary);">Left Pan</div>
+              <div id="cTotal" style="font-size:0.78rem;font-weight:800;color:var(--customary);">—</div>
+            </div>
+            <div style="position:absolute;right:0;width:100px;text-align:center;">
+              <div style="font-family:'Fredoka One',cursive;font-size:0.82rem;color:var(--metric);">Right Pan</div>
+              <div id="mTotal" style="font-size:0.78rem;font-weight:800;color:var(--metric);">—</div>
+            </div>
+          </div>
+        </div>
+        <!-- Balance readout -->
+        <div class="balance-readout" id="balanceReadout">
+          <div class="bal-status">⚖️ Empty — add objects!</div>
+          <div class="bal-detail" id="balDetail"></div>
+          <div class="bal-equiv" id="balEquiv"></div>
+        </div>
+      </div>
+
+      <!-- Right pan items list -->
+      <div class="weight-side">
+        <h4 class="m">Right Pan</h4>
+        <div class="pan-items" id="mBoxes"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:0.5rem;">
+      <button class="pour-btn" style="background:#888" onclick="resetMass()">🗑 Clear Scale</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERTER -->
+<div class="section" id="converter">
+  <h2>🔢 Unit Converter</h2>
+  <div class="converter-grid">
+    <div class="converter-card">
+      <h3>📏 Length</h3>
+      <div class="conv-row">
+        <input type="number" id="inch_in" placeholder="0" oninput="conv('inch')">
+        <span class="conv-label">in</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="inch_out">— cm</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="cm_in" placeholder="0" oninput="conv('cm')">
+        <span class="conv-label">cm</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="cm_out">— in</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="mi_in" placeholder="0" oninput="conv('mi')">
+        <span class="conv-label">miles</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="mi_out">— km</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="km_in" placeholder="0" oninput="conv('km')">
+        <span class="conv-label">km</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="km_out">— miles</div>
+      </div>
+    </div>
+    <div class="converter-card">
+      <h3>🥤 Capacity</h3>
+      <div class="conv-row">
+        <input type="number" id="cup_in" placeholder="0" oninput="conv('cup_c')">
+        <span class="conv-label">cups</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="cup_out">— mL</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="qt_in" placeholder="0" oninput="conv('qt')">
+        <span class="conv-label">quarts</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="qt_out">— L</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="gal_in" placeholder="0" oninput="conv('gal')">
+        <span class="conv-label">gallons</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="gal_out">— L</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="L_in" placeholder="0" oninput="conv('L')">
+        <span class="conv-label">liters</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="L_out">— quarts</div>
+      </div>
+    </div>
+    <div class="converter-card">
+      <h3>⚖️ Weight / Mass</h3>
+      <div class="conv-row">
+        <input type="number" id="oz_in" placeholder="0" oninput="conv('oz')">
+        <span class="conv-label">oz</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="oz_out">— g</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="lb_in" placeholder="0" oninput="conv('lb')">
+        <span class="conv-label">lb</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="lb_out">— kg</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="g_in" placeholder="0" oninput="conv('g')">
+        <span class="conv-label">grams</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="g_out">— oz</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="kg_in" placeholder="0" oninput="conv('kg_c')">
+        <span class="conv-label">kg</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="kg_out">— lb</div>
+      </div>
+    </div>
+    <div class="converter-card">
+      <h3>🌡️ Temperature</h3>
+      <div class="conv-row">
+        <input type="number" id="F_in" placeholder="72" oninput="conv('F')">
+        <span class="conv-label">°F</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="F_out">— °C</div>
+      </div>
+      <div class="conv-row">
+        <input type="number" id="C_in" placeholder="0" oninput="conv('C')">
+        <span class="conv-label">°C</span>
+        <span class="conv-arrow">→</span>
+        <div class="conv-result" id="C_out">— °F</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="section" id="quiz">
+  <h2>🧠 Test Your Knowledge!</h2>
+  <div class="score-display" id="scoreDisplay">Score: 0 / 0</div>
+  <div id="quizArea"></div>
+</div>
+
+<script>
+// ===== NAVIGATION =====
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'liquid') initLiquid();
+  if (id === 'mass')  initMassLab();
+  if (id === 'quiz')  initQuiz();
+}
+
+// ===== LIQUID LAB =====
+const unitData = {
+  tsp: {
+    ml: 4.929, maxMl: 59.15, label: 'tsp', pluralLabel: 'tsp', maxUnits: 12,
+    // Teaspoon: small oval bowl shape
+    svgW: 60, svgH: 80,
+    vesselPath: 'M22,8 Q20,8 18,14 L12,52 Q10,62 20,68 L40,68 Q50,62 48,52 L42,14 Q40,8 38,8 Z',
+    fillPath:   'M24,14 Q22,14 20,18 L14,52 Q13,60 22,65 L38,65 Q47,60 46,52 L40,18 Q38,14 36,14 Z',
+    fillH: 51, fillY: 14, color:'#c0392b', borderColor:'#922b21',
+    metricSet: 'small'
+  },
+  tbsp: {
+    ml: 14.787, maxMl: 118.3, label: 'tbsp', pluralLabel: 'tbsp', maxUnits: 8,
+    // Tablespoon: wider oval bowl, slightly larger
+    svgW: 70, svgH: 90,
+    vesselPath: 'M20,8 Q17,8 15,15 L10,56 Q8,68 22,74 L48,74 Q62,68 60,56 L55,15 Q53,8 50,8 Z',
+    fillPath:   'M22,14 Q20,14 18,19 L13,56 Q12,66 24,71 L46,71 Q58,66 57,56 L52,19 Q50,14 48,14 Z',
+    fillH: 57, fillY: 14, color:'#8e44ad', borderColor:'#6c3483',
+    metricSet: 'small'
+  },
+  cup: {
+    ml: 237, maxMl: 1896, label: 'cup', pluralLabel: 'cups', maxUnits: 8,
+    svgW: 80, svgH: 110,
+    vesselPath: 'M10,6 L70,6 L66,104 L14,104 Z',
+    fillPath:   'M13,9  L67,9  L63,101 L17,101 Z',
+    fillH: 92, fillY: 9, color:'#e86c2c', borderColor:'#c0501a'
+  },
+  pint: {
+    ml: 473, maxMl: 3784, label: 'pint', pluralLabel: 'pints', maxUnits: 8,
+    svgW: 72, svgH: 150,
+    vesselPath: 'M8,6  L64,6  L54,144 L18,144 Z',
+    fillPath:   'M11,9 L61,9 L51,141 L21,141 Z',
+    fillH: 132, fillY: 9, color:'#2c7be8', borderColor:'#1a5cb8'
+  },
+  quart: {
+    ml: 946, maxMl: 3784, label: 'quart', pluralLabel: 'quarts', maxUnits: 4,
+    svgW: 80, svgH: 160,
+    vesselPath: 'M12,6 Q10,6 10,18 L10,148 Q10,155 20,155 L60,155 Q70,155 70,148 L70,18 Q70,6 68,6 Z',
+    fillPath:   'M13,10 Q13,12 13,20 L13,148 Q13,152 20,152 L60,152 Q67,152 67,148 L67,20 Q67,12 67,10 Z',
+    fillH: 142, fillY: 10, color:'#9c27b0', borderColor:'#6a1970'
+  },
+  gallon: {
+    ml: 3785, maxMl: 7570, label: 'gallon', pluralLabel: 'gallons', maxUnits: 2,
+    svgW: 100, svgH: 190,
+    vesselPath: 'M38,6 L62,6 L64,28 L82,32 L82,182 Q82,186 78,186 L22,186 Q18,186 18,182 L18,32 L36,28 Z',
+    fillPath:   'M40,30 L60,30 L62,33 L79,36 L79,182 Q79,184 78,184 L22,184 Q21,184 21,182 L21,36 L38,33 Z',
+    fillH: 148, fillY: 30, color:'#4caf50', borderColor:'#2e7d2e'
+  },
+};
+
+// Small metric vessels for tsp/tbsp comparisons (5mL, 15mL, 30mL, 60mL)
+const metricVesselsSmall = [
+  { label:'5 mL',  cap:5,  svgW:36, svgH:80,
+    vesselPath:'M12,8 L24,8 L26,74 L10,74 Z',
+    fillPath:  'M13,11 L23,11 L25,71 L11,71 Z',
+    fillH:60, fillY:11, color:'#2c7be8', borderColor:'#1a5cb8' },
+  { label:'15 mL', cap:15, svgW:44, svgH:90,
+    vesselPath:'M12,8 L32,8 L34,84 L10,84 Z',
+    fillPath:  'M13,11 L31,11 L33,81 L11,81 Z',
+    fillH:70, fillY:11, color:'#2c7be8', borderColor:'#1a5cb8' },
+  { label:'30 mL', cap:30, svgW:52, svgH:110,
+    vesselPath:'M10,8 L42,8 L44,104 L8,104 Z',
+    fillPath:  'M11,11 L41,11 L43,101 L9,101 Z',
+    fillH:90, fillY:11, color:'#2c7be8', borderColor:'#1a5cb8' },
+  { label:'60 mL', cap:60, svgW:60, svgH:130,
+    vesselPath:'M10,8 L50,8 L52,124 L8,124 Z',
+    fillPath:  'M11,11 L49,11 L51,121 L9,121 Z',
+    fillH:110, fillY:11, color:'#2c7be8', borderColor:'#1a5cb8' },
+];
+
+const metricVessels = [
+  { label:'250 mL', cap:250,  svgW:48,  svgH:130,
+    vesselPath:'M14,6 L34,6 L38,124 L10,124 Z',
+    fillPath:  'M16,9 L32,9 L36,121 L12,121 Z',
+    fillH:112, fillY:9, color:'#2c7be8', borderColor:'#1a5cb8' },
+  { label:'500 mL', cap:500,  svgW:70,  svgH:150,
+    vesselPath:'M28,6 L42,6 L44,38 L62,108 L62,144 Q62,148 58,148 L12,148 Q8,148 8,144 L8,108 L26,38 Z',
+    fillPath:  'M30,38 L40,38 L58,106 L58,144 Q58,146 56,146 L14,146 Q12,146 12,144 L12,106 Z',
+    fillH:108, fillY:38, color:'#2c7be8', borderColor:'#1a5cb8' },
+  { label:'1 L',    cap:1000, svgW:80,  svgH:180,
+    vesselPath:'M30,6 L50,6 L52,33 Q72,48 72,98 Q72,173 40,173 Q8,173 8,98 Q8,48 28,33 Z',
+    fillPath:  'M32,34 Q28,48 11,98 Q11,169 40,169 Q69,169 69,98 Q72,48 48,34 Z',
+    fillH:135, fillY:34, color:'#2c7be8', borderColor:'#1a5cb8' },
+  { label:'2 L',    cap:2000, svgW:100, svgH:190,
+    vesselPath:'M20,6 L80,6 L82,20 L86,180 Q86,186 80,186 L20,186 Q14,186 14,180 L18,20 Z',
+    fillPath:  'M22,21 L78,21 L82,178 Q82,183 80,183 L20,183 Q18,183 18,178 Z',
+    fillH:162, fillY:21, color:'#2c7be8', borderColor:'#1a5cb8' },
+];
+
+const funFacts = [
+  { title:'Soda Can', metric:'355 mL', custom:'12 fl oz',
+    svg:`<svg width="44" height="68" viewBox="0 0 44 68"><rect x="6" y="13" width="32" height="46" fill="#c0392b" rx="3"/><ellipse cx="22" cy="13" rx="16" ry="5" fill="#e74c3c"/><ellipse cx="22" cy="59" rx="16" ry="5" fill="#a93226"/><rect x="8" y="18" width="5" height="36" fill="rgba(255,255,255,0.15)" rx="2"/><text x="22" y="40" text-anchor="middle" font-size="6" font-weight="bold" fill="white" font-family="sans-serif">SODA</text><rect x="18" y="7" width="8" height="4" fill="#bbb" rx="1"/></svg>` },
+  { title:'Water Bottle', metric:'500 mL', custom:'~2 cups',
+    svg:`<svg width="40" height="78" viewBox="0 0 40 78"><rect x="12" y="5" width="16" height="10" fill="#a0d8ef" rx="2"/><path d="M6,15 Q6,11 12,11 L28,11 Q34,11 34,15 L36,70 Q36,74 32,74 L8,74 Q4,74 4,70 Z" fill="#a0d8ef" stroke="#5ba3c0" stroke-width="2"/><rect x="7" y="28" width="24" height="3" fill="rgba(255,255,255,0.45)" rx="2"/><rect x="7" y="50" width="24" height="2" fill="rgba(255,255,255,0.3)" rx="1"/><rect x="12" y="5" width="16" height="5" fill="#78b8d0" rx="2"/></svg>` },
+  { title:'Coffee Mug', metric:'~350 mL', custom:'~12 fl oz',
+    svg:`<svg width="66" height="65" viewBox="0 0 66 65"><path d="M8,8 L48,8 L50,60 Q50,64 46,64 L10,64 Q6,64 6,60 Z" fill="#8B4513" stroke="#5C2D0A" stroke-width="2"/><path d="M50,20 Q66,20 66,34 Q66,48 50,48" fill="none" stroke="#5C2D0A" stroke-width="3"/><rect x="9" y="10" width="38" height="18" fill="#6B3410" rx="1"/><path d="M16,4 Q18,0 20,4" fill="none" stroke="#bbb" stroke-width="1.5"/><path d="M26,2 Q28,0 30,2" fill="none" stroke="#bbb" stroke-width="1.5"/></svg>` },
+  { title:'Milk Carton', metric:'~946 mL', custom:'~1 quart',
+    svg:`<svg width="56" height="76" viewBox="0 0 56 76"><rect x="8" y="18" width="40" height="54" fill="white" stroke="#ccc" stroke-width="2"/><polygon points="8,18 28,6 48,18" fill="#eee" stroke="#ccc" stroke-width="2"/><rect x="8" y="26" width="40" height="10" fill="#1565c0"/><text x="28" y="34" text-anchor="middle" font-size="6" fill="white" font-weight="bold" font-family="sans-serif">MILK</text><rect x="12" y="40" width="32" height="26" fill="#f0f8ff" rx="2"/><text x="28" y="57" text-anchor="middle" font-size="6" fill="#555" font-family="sans-serif">1 Quart</text></svg>` },
+  { title:'Fish Tank', metric:'~38 L', custom:'~10 gal',
+    svg:`<svg width="80" height="60" viewBox="0 0 80 60"><rect x="4" y="8" width="72" height="48" fill="#a8d8f0" stroke="#5090b0" stroke-width="2" rx="3"/><rect x="4" y="8" width="72" height="7" fill="#c0e8ff" rx="2"/><ellipse cx="24" cy="38" rx="10" ry="7" fill="#ff8c00"/><circle cx="21" cy="36" r="1.5" fill="white"/><path d="M34,38 Q37,32 41,38" fill="#ff8c00"/><path d="M14,30 Q17,24 20,30" fill="none" stroke="#2d8a30" stroke-width="2"/><path d="M54,26 Q57,19 60,26" fill="none" stroke="#2d8a30" stroke-width="2"/></svg>` },
+  { title:'Bathtub 🛁', metric:'~200 L', custom:'~53 gal',
+    svg:`<svg width="88" height="56" viewBox="0 0 88 56"><path d="M5,18 L5,48 Q5,53 11,53 L77,53 Q83,53 83,48 L83,18 Z" fill="#e0f0ff" stroke="#90b8d0" stroke-width="2"/><rect x="1" y="16" width="86" height="5" fill="#c0d8e8" rx="2"/><rect x="5" y="6" width="8" height="12" fill="#bbb" rx="2"/><ellipse cx="9" cy="6" rx="4" ry="3" fill="#999"/><path d="M18,32 Q44,24 68,32" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/></svg>` },
+  { title:'Olympic Pool', metric:'2.5M L', custom:'660K gal',
+    svg:`<svg width="88" height="58" viewBox="0 0 88 58"><rect x="4" y="12" width="80" height="38" fill="#1a90d0" rx="4"/><rect x="4" y="12" width="80" height="6" fill="#2da8e8" rx="4"/><line x1="4" y1="23" x2="84" y2="23" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="4" y1="34" x2="84" y2="34" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="4" y1="44" x2="84" y2="44" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><path d="M8,28 Q22,23 36,28 Q50,33 64,28 Q76,23 84,28" fill="none" stroke="white" stroke-width="1.5" opacity="0.5"/><rect x="36" y="2" width="16" height="12" fill="#ddd" rx="1"/><line x1="44" y1="2" x2="44" y2="0" stroke="#aaa" stroke-width="1.5"/></svg>` },
+];
+
+let currentMl = 0;
+let flowing = false;
+let flowPct = 0;
+let animFrame = null;
+
+function initFlowSlider() {
+  const track = document.getElementById('flowTrack');
+  if (!track) return;
+  let dragging = false;
+  function setPct(e) {
+    const rect = track.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const pct = Math.round(Math.max(0, Math.min(1, (cx - rect.left) / rect.width)) * 100);
+    setFlowPct(pct);
+  }
+  track.addEventListener('mousedown', e => { dragging = true; setPct(e); });
+  track.addEventListener('touchstart', e => { dragging = true; setPct(e); }, {passive:true});
+  document.addEventListener('mousemove', e => { if (dragging) setPct(e); });
+  document.addEventListener('touchmove', e => { if (dragging) setPct(e); }, {passive:true});
+  document.addEventListener('mouseup', () => dragging = false);
+  document.addEventListener('touchend', () => dragging = false);
+}
+
+function setFlowPct(pct) {
+  flowPct = pct;
+  const fill  = document.getElementById('flowFill');
+  const thumb = document.getElementById('flowThumb');
+  const lbl   = document.getElementById('flowPct');
+  if (fill)  fill.style.width  = pct + '%';
+  if (thumb) thumb.style.left  = pct + '%';
+  if (lbl)   lbl.textContent   = pct + '%';
+  document.querySelectorAll('.drip').forEach((d, i) => {
+    d.style.animationDuration = pct > 0 ? Math.max(0.15, 1.1 - pct / 110) + 's' : '999s';
+    d.style.opacity = pct > 0 ? '1' : '0';
+  });
+}
+
+function toggleFlow() {
+  const btn = document.getElementById('flowToggle');
+  if (flowing) {
+    flowing = false;
+    cancelAnimationFrame(animFrame);
+    btn.textContent = '▶ Start Flow';
+    btn.style.background = 'var(--metric)';
+  } else {
+    if (flowPct === 0) { setFlowPct(30); } // default to 30% if not set
+    flowing = true;
+    btn.textContent = '⏸ Stop Flow';
+    btn.style.background = '#e82c2c';
+    runFlow();
+  }
+}
+
+function runFlow() {
+  if (!flowing) return;
+  const unit = document.getElementById('custUnit').value;
+  const ud = unitData[unit];
+  // Scale add rate to unit size — tiny units get a much smaller increment so you can watch them fill
+  const baseRate = ud.metricSet === 'small' ? 0.5 : 55;
+  const addMl = (flowPct / 100) * baseRate;
+  currentMl += addMl;
+  renderLiquid(currentMl);
+  if (currentMl >= ud.maxMl * 1.6) {
+    flowing = false;
+    const btn = document.getElementById('flowToggle');
+    if (btn) { btn.textContent = '▶ Start Flow'; btn.style.background = 'var(--metric)'; }
+    return;
+  }
+  animFrame = requestAnimationFrame(runFlow);
+}
+
+function initLiquid() {
+  buildContainers();
+  buildFunFacts();
+  initFlowSlider();
+  renderLiquid(0);
+}
+
+function buildContainers() {
+  const row = document.getElementById('containersRow');
+  if (!row) return;
+  row.innerHTML = '';
+  // Remove any stale global gradient defs
+  document.querySelectorAll('#globalLiquidDefs').forEach(e => e.remove());
+
+  const unit = document.getElementById('custUnit').value;
+  const ud = unitData[unit];
+
+  // Inject global SVG gradient once
+  const gSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  gSvg.setAttribute('id','globalLiquidDefs');
+  gSvg.setAttribute('width','0'); gSvg.setAttribute('height','0');
+  gSvg.style.position = 'absolute';
+  const gDefs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const grad = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+  grad.setAttribute('id','liquidGrad'); grad.setAttribute('x1','0'); grad.setAttribute('y1','0'); grad.setAttribute('x2','0'); grad.setAttribute('y2','1');
+  const s1 = document.createElementNS('http://www.w3.org/2000/svg','stop'); s1.setAttribute('offset','0'); s1.setAttribute('stop-color','rgba(80,170,255,0.8)');
+  const s2 = document.createElementNS('http://www.w3.org/2000/svg','stop'); s2.setAttribute('offset','1'); s2.setAttribute('stop-color','rgba(20,90,200,0.95)');
+  grad.appendChild(s1); grad.appendChild(s2); gDefs.appendChild(grad); gSvg.appendChild(gDefs);
+  document.body.insertBefore(gSvg, document.body.firstChild);
+
+  row.appendChild(makeVesselWrap('custVessel', ud, `🇺🇸 ${ud.label[0].toUpperCase()+ud.label.slice(1)}`, true));
+  const vessels = ud.metricSet === 'small' ? metricVesselsSmall : metricVessels;
+  vessels.forEach((mv, i) => row.appendChild(makeVesselWrap(`mVessel${i}`, mv, `🌍 ${mv.label}`, false)));
+}
+
+function makeVesselWrap(id, cfg, title, isCustomary) {
+  const wrap = document.createElement('div');
+  wrap.className = 'container-wrap';
+
+  const t = document.createElement('div');
+  t.className = 'ctitle';
+  t.style.color = isCustomary ? 'var(--customary)' : 'var(--metric)';
+  t.textContent = title;
+  wrap.appendChild(t);
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS,'svg');
+  svg.setAttribute('width', cfg.svgW);
+  svg.setAttribute('height', cfg.svgH);
+  svg.setAttribute('viewBox', `0 0 ${cfg.svgW} ${cfg.svgH}`);
+  svg.classList.add('vessel-svg');
+
+  // Clip path
+  const defs = document.createElementNS(NS,'defs');
+  const cp = document.createElementNS(NS,'clipPath'); cp.setAttribute('id',`clip_${id}`);
+  const cs = document.createElementNS(NS,'path'); cs.setAttribute('d', cfg.fillPath);
+  cp.appendChild(cs); defs.appendChild(cp); svg.appendChild(defs);
+
+  // Liquid fill group (clipped)
+  const fillG = document.createElementNS(NS,'g');
+  fillG.setAttribute('clip-path',`url(#clip_${id})`);
+
+  const fillRect = document.createElementNS(NS,'rect');
+  fillRect.setAttribute('id',`fill_${id}`);
+  fillRect.setAttribute('x','0'); fillRect.setAttribute('width', cfg.svgW);
+  fillRect.setAttribute('y', cfg.svgH); fillRect.setAttribute('height', cfg.fillH);
+  fillRect.setAttribute('fill','url(#liquidGrad)');
+  fillG.appendChild(fillRect);
+
+  // Shimmer wave on top of liquid
+  const wave = document.createElementNS(NS,'ellipse');
+  wave.setAttribute('id',`wave_${id}`);
+  wave.setAttribute('cx', cfg.svgW/2); wave.setAttribute('rx', cfg.svgW/2 - 4); wave.setAttribute('ry','4');
+  wave.setAttribute('cy', cfg.svgH); wave.setAttribute('fill','rgba(255,255,255,0.3)');
+  fillG.appendChild(wave);
+  svg.appendChild(fillG);
+
+  // Vessel outline
+  const border = document.createElementNS(NS,'path');
+  border.setAttribute('d', cfg.vesselPath);
+  border.setAttribute('fill','rgba(240,250,255,0.18)');
+  border.setAttribute('stroke', cfg.borderColor);
+  border.setAttribute('stroke-width','3');
+  border.setAttribute('stroke-linejoin','round');
+  svg.appendChild(border);
+
+  // Amount text inside
+  const amtT = document.createElementNS(NS,'text');
+  amtT.setAttribute('id',`amt_${id}`);
+  amtT.setAttribute('x', cfg.svgW/2); amtT.setAttribute('y', cfg.svgH - 6);
+  amtT.setAttribute('text-anchor','middle'); amtT.setAttribute('font-size','9');
+  amtT.setAttribute('font-weight','bold'); amtT.setAttribute('fill','white');
+  amtT.setAttribute('paint-order','stroke'); amtT.setAttribute('stroke','rgba(0,0,0,0.6)');
+  amtT.setAttribute('stroke-width','2.5');
+  svg.appendChild(amtT);
+
+  wrap.appendChild(svg);
+
+  const ovf = document.createElement('div');
+  ovf.className = 'overflow-badge'; ovf.id = `ovf_${id}`;
+  ovf.textContent = '💧 overflow!';
+  wrap.appendChild(ovf);
+
+  const bl = document.createElement('div');
+  bl.className = 'clabel'; bl.id = `lbl_${id}`;
+  bl.textContent = isCustomary
+    ? `0 / ${cfg.maxUnits} ${cfg.pluralLabel}`
+    : `0 / ${cfg.cap} mL`;
+  wrap.appendChild(bl);
+
+  return wrap;
+}
+
+function updateLiquid() {
+  flowing = false;
+  cancelAnimationFrame(animFrame);
+  const btn = document.getElementById('flowToggle');
+  if (btn) { btn.textContent = '▶ Start Flow'; btn.style.background = 'var(--metric)'; }
+  currentMl = 0;
+  setFlowPct(0);
+  buildContainers();
+  renderLiquid(0);
+}
+
+function resetLiquid() {
+  flowing = false;
+  cancelAnimationFrame(animFrame);
+  const btn = document.getElementById('flowToggle');
+  if (btn) { btn.textContent = '▶ Start Flow'; btn.style.background = 'var(--metric)'; }
+  currentMl = 0;
+  setFlowPct(0);
+  buildContainers();
+  renderLiquid(0);
+}
+
+function renderLiquid(ml) {
+  const unit = document.getElementById('custUnit').value;
+  const ud = unitData[unit];
+  const vessels = ud.metricSet === 'small' ? metricVesselsSmall : metricVessels;
+  updateVessel('custVessel', ud, ml, true);
+  vessels.forEach((mv, i) => updateVessel(`mVessel${i}`, mv, ml, false));
+
+  const note = document.getElementById('compNote');
+  if (note) {
+    if (ml > 0) {
+      const tsp   = ml / 4.929;
+      const tbsp  = ml / 14.787;
+      const cups  = ml / 237;
+      const liters = ml / 1000;
+      const oz    = ml / 29.574;
+      if (unit === 'tsp' || unit === 'tbsp') {
+        note.textContent = `${ml.toFixed(2)} mL = ${tsp.toFixed(2)} tsp = ${tbsp.toFixed(2)} tbsp = ${oz.toFixed(2)} fl oz`;
+      } else {
+        note.textContent = `${ml.toFixed(0)} mL = ${tsp.toFixed(1)} tsp = ${tbsp.toFixed(1)} tbsp = ~${cups.toFixed(2)} cups = ~${liters.toFixed(3)} L`;
+      }
+    } else {
+      note.textContent = 'Drag the flow slider or hit Start Flow!';
+    }
+  }
+}
+
+function updateVessel(id, cfg, ml, isCustomary) {
+  const fillEl = document.getElementById(`fill_${id}`);
+  const waveEl = document.getElementById(`wave_${id}`);
+  const amtEl  = document.getElementById(`amt_${id}`);
+  const lblEl  = document.getElementById(`lbl_${id}`);
+  const ovfEl  = document.getElementById(`ovf_${id}`);
+  if (!fillEl) return;
+
+  const cap = isCustomary ? cfg.maxMl : cfg.cap;
+  const filledMl = Math.min(ml, cap);
+  const pct = Math.min(filledMl / cap, 1);
+  const overflowed = ml > cap;
+
+  const fillTopY = cfg.fillY + cfg.fillH * (1 - pct);
+  fillEl.setAttribute('y', fillTopY);
+  fillEl.setAttribute('height', cfg.fillH * pct);
+  if (waveEl) waveEl.setAttribute('cy', fillTopY);
+
+  if (amtEl) {
+    if (ml > 0 && pct > 0.04) {
+      amtEl.textContent = isCustomary
+        ? `${(ml/cfg.ml).toFixed(2)} ${(Math.abs(ml/cfg.ml-1)<0.01)?cfg.label:cfg.pluralLabel}`
+        : (cfg.cap <= 60 ? `${filledMl.toFixed(1)} mL` : `${filledMl.toFixed(0)} mL`);
+    } else { amtEl.textContent = ''; }
+  }
+
+  if (lblEl) {
+    lblEl.textContent = isCustomary
+      ? (ml > 0 ? `${(ml/cfg.ml).toFixed(2)} / ${cfg.maxUnits} ${cfg.pluralLabel}` : `0 / ${cfg.maxUnits} ${cfg.pluralLabel}`)
+      : (ml > 0 ? `${filledMl.toFixed(0)} / ${cfg.cap} mL` : `0 / ${cfg.cap} mL`);
+  }
+
+  if (ovfEl) {
+    if (overflowed) {
+      const extra = ml - cap;
+      ovfEl.style.display = 'inline-block';
+      ovfEl.textContent = `💧 +${extra.toFixed(0)} mL over!`;
+    } else {
+      ovfEl.style.display = 'none';
+    }
+  }
+}
+
+function buildFunFacts() {
+  const grid = document.getElementById('funFactsGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  funFacts.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'fun-fact-card';
+    card.innerHTML = `${f.svg}<div class="fact-title">${f.title}</div><div class="fact-metric">🌍 ${f.metric}</div><div class="fact-custom">🇺🇸 ${f.custom}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ===== MASS LAB =====
+const massObjects = [
+  { id:'penny',    icon:'🪙', name:'Penny',         g:2.5,     metric:'2.5 g',    custom:'0.09 oz' },
+  { id:'pencil',   icon:'✏️', name:'Pencil',         g:7,       metric:'7 g',      custom:'0.25 oz' },
+  { id:'egg',      icon:'🥚', name:'Egg',            g:60,      metric:'60 g',     custom:'2.1 oz'  },
+  { id:'apple',    icon:'🍎', name:'Apple',          g:182,     metric:'182 g',    custom:'6.4 oz'  },
+  { id:'football', icon:'🏈', name:'Football',       g:411,     metric:'411 g',    custom:'14.5 oz' },
+  { id:'laptop',   icon:'💻', name:'Laptop',         g:1800,    metric:'1.8 kg',   custom:'4 lb'    },
+  { id:'baby',     icon:'👶', name:'Newborn Baby',   g:3400,    metric:'3.4 kg',   custom:'7.5 lb'  },
+  { id:'bowling',  icon:'🎳', name:'Bowling Ball',   g:6804,    metric:'6.8 kg',   custom:'15 lb'   },
+  { id:'car',      icon:'🚗', name:'Car',            g:1400000, metric:'1,400 kg', custom:'3,086 lb'},
+];
+
+const challenges = [
+  { q:'How many 💻 Laptops weigh the same as one 👶 Newborn Baby?',
+    hintMetric:'Baby ≈ 3.4 kg · Laptop ≈ 1.8 kg. Divide!',
+    hintCustom:'Baby ≈ 7.5 lb · Laptop ≈ 4 lb. Divide!',
+    answerMetric:'About 1.9 laptops — nearly 2! A newborn (3.4 kg) weighs almost as much as two laptops (1.8 kg each). Try it on the scale!',
+    answerCustom:'About 1.9 laptops — nearly 2! A newborn (7.5 lb) weighs almost as much as two laptops (4 lb each). Try it on the scale!' },
+  { q:'How many 🥚 Eggs equal the weight of one 🏈 NFL Football?',
+    hintMetric:'Football ≈ 411 g · Egg ≈ 60 g. Divide!',
+    hintCustom:'Football ≈ 14.5 oz · Egg ≈ 2.1 oz. Divide!',
+    answerMetric:'About 6.85 eggs — nearly 7! A football (411 g) ≈ 7 large eggs. Load up the scale and see!',
+    answerCustom:'About 6.85 eggs — nearly 7! A football (14.5 oz) ≈ 7 large eggs. Load up the scale and see!' },
+  { q:'How many 🪙 Pennies would you need to balance one 🍎 Apple?',
+    hintMetric:'Apple ≈ 182 g · Penny ≈ 2.5 g. Divide!',
+    hintCustom:'Apple ≈ 6.4 oz · Penny ≈ 0.09 oz. Divide!',
+    answerMetric:'About 73 pennies! A medium apple (182 g) = ~73 pennies.',
+    answerCustom:'About 73 pennies! A medium apple (6.4 oz) = ~73 pennies.' },
+  { q:'A 🎳 Bowling Ball is how many times heavier than a 💻 Laptop?',
+    hintMetric:'Bowling Ball ≈ 6.8 kg · Laptop ≈ 1.8 kg.',
+    hintCustom:'Bowling Ball ≈ 15 lb · Laptop ≈ 4 lb.',
+    answerMetric:'About 3.8×! A bowling ball (6.8 kg) is nearly 4 laptops heavy. Try it!',
+    answerCustom:'About 3.8×! A bowling ball (15 lb) is nearly 4 laptops (4 lb each) heavy. Try it!' },
+  { q:'How many 👶 Newborn Babies equal the weight of a 🚗 Car?',
+    hintMetric:'Car ≈ 1,400 kg · Baby ≈ 3.4 kg.',
+    hintCustom:'Car ≈ 3,086 lb · Baby ≈ 7.5 lb.',
+    answerMetric:'About 412 babies! A car (1,400 kg) weighs as much as 400+ newborns.',
+    answerCustom:'About 412 babies! A car (3,086 lb) weighs as much as 400+ newborns.' },
+  { q:'Which is heavier: 10 🥚 Eggs or 1 🏈 Football?',
+    hintMetric:'10 × 60 g = 600 g. Football = 411 g.',
+    hintCustom:'10 × 2.1 oz = 21 oz. Football = 14.5 oz.',
+    answerMetric:'10 eggs win! 10 eggs = 600 g vs football at 411 g. Eggs are 46% heavier!',
+    answerCustom:'10 eggs win! 10 eggs = 21 oz vs football at 14.5 oz. Eggs are 46% heavier!' },
+  { q:'How many ✏️ Pencils balance one 🥚 Egg?',
+    hintMetric:'Egg ≈ 60 g · Pencil ≈ 7 g.',
+    hintCustom:'Egg ≈ 2.1 oz · Pencil ≈ 0.25 oz.',
+    answerMetric:'About 8–9 pencils! 9 × 7 g = 63 g ≈ 60 g. Try it on the scale!',
+    answerCustom:'About 8–9 pencils! 9 × 0.25 oz = 2.25 oz ≈ 2.1 oz. Try it on the scale!' },
+  { q:'5 🍎 Apples vs 1 💻 Laptop — which one is heavier?',
+    hintMetric:'5 × 182 g = 910 g. Laptop = 1,800 g.',
+    hintCustom:'5 × 6.4 oz = 32 oz = 2 lb. Laptop = 4 lb.',
+    answerMetric:'The laptop wins! 5 apples = 910 g vs laptop at 1,800 g. You\'d need ~10 apples!',
+    answerCustom:'The laptop wins! 5 apples = 2 lb vs laptop at 4 lb. You\'d need ~10 apples!' },
+];
+
+let cPan = {}, mPan = {};
+let showMetric = false;
+let challengeIdx = 0;
+
+function initMassLab() {
+  buildMassObjectCards();
+  buildChallengeQuestion();
+  updateScale();
+}
+
+// ---- Toggle ----
+function toggleUnits() {
+  showMetric = !showMetric;
+  document.getElementById('unitToggle').classList.toggle('metric-mode', showMetric);
+
+  // Update every object card's mass display
+  massObjects.forEach(obj => {
+    const el = document.getElementById(`mass_${obj.id}`);
+    if (el) el.innerHTML = showMetric ? obj.metric : obj.custom;
+  });
+
+  // Update challenge question hint/answer
+  buildChallengeQuestion();
+
+  // Re-render pan lists and scale totals in new unit
+  rebuildPanList('c');
+  rebuildPanList('m');
+  updateScale();
+}
+
+// ---- Challenges ----
+function buildChallengeQuestion() {
+  const c = challenges[challengeIdx % challenges.length];
+  document.getElementById('challengeQ').textContent = c.q;
+  const hintEl = document.getElementById('challengeHint');
+  if (hintEl) hintEl.textContent = '💭 Hint: ' + (showMetric ? c.hintMetric : c.hintCustom);
+  const ans = document.getElementById('challengeAnswer');
+  if (ans) { ans.style.display = 'none'; ans.textContent = '✅ ' + (showMetric ? c.answerMetric : c.answerCustom); }
+}
+
+function revealAnswer() {
+  const ans = document.getElementById('challengeAnswer');
+  if (ans) ans.style.display = 'block';
+}
+
+function nextChallenge() {
+  challengeIdx = (challengeIdx + 1) % challenges.length;
+  buildChallengeQuestion();
+}
+
+// ---- Object cards ----
+function buildMassObjectCards() {
+  const grid = document.getElementById('massObjectsGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  massObjects.forEach(obj => {
+    const card = document.createElement('div');
+    card.className = 'mass-obj-card';
+    card.id = `objcard_${obj.id}`;
+    card.innerHTML = `
+      <div class="obj-icon">${obj.icon}</div>
+      <div class="obj-name">${obj.name}</div>
+      <div class="obj-mass" id="mass_${obj.id}">${showMetric ? obj.metric : obj.custom}</div>
+      <div class="obj-btn-labels">
+        <span style="color:var(--customary)" id="cnt_c_${obj.id}">L: 0</span>
+        <span style="color:var(--metric)"    id="cnt_m_${obj.id}">R: 0</span>
+      </div>
+      <div class="obj-btns" style="margin-top:0.3rem;">
+        <button class="obj-btn sub-left"  title="Remove from Left"  onclick="changeMass('c','${obj.id}',-1)" id="sub_c_${obj.id}" disabled>−</button>
+        <button class="obj-btn sub-right" title="Remove from Right" onclick="changeMass('m','${obj.id}',-1)" id="sub_m_${obj.id}" disabled>−</button>
+      </div>
+      <div class="obj-btns" style="margin-top:0.4rem;">
+        <button class="obj-btn add-left"  title="Add to Left pan"   onclick="changeMass('c','${obj.id}',1)">+</button>
+        <button class="obj-btn add-right" title="Add to Right pan"  onclick="changeMass('m','${obj.id}',1)">+</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function changeMass(side, objId, delta) {
+  const pan = side === 'c' ? cPan : mPan;
+  pan[objId] = Math.max(0, (pan[objId] || 0) + delta);
+  document.getElementById(`sub_${side}_${objId}`).disabled = pan[objId] === 0;
+  document.getElementById(`cnt_c_${objId}`).textContent = `L: ${cPan[objId] || 0}`;
+  document.getElementById(`cnt_m_${objId}`).textContent = `R: ${mPan[objId] || 0}`;
+  rebuildPanList(side);
+  updateScale();
+}
+
+function rebuildPanList(side) {
+  const pan = side === 'c' ? cPan : mPan;
+  const container = document.getElementById(side === 'c' ? 'cBoxes' : 'mBoxes');
+  container.innerHTML = '';
+  massObjects.forEach(obj => {
+    const count = pan[obj.id] || 0;
+    if (count === 0) return;
+    const item = document.createElement('div');
+    item.className = 'pan-item';
+    const massStr = showMetric ? formatG(obj.g * count) : formatCustomary(obj.g * count);
+    item.innerHTML = `
+      <span class="pi-icon">${obj.icon}</span>
+      <span class="pi-label">${obj.name}${count > 1 ? ' ×' + count : ''}</span>
+      <span class="pi-mass">${massStr}</span>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function panTotalG(pan) {
+  return massObjects.reduce((sum, obj) => sum + obj.g * (pan[obj.id] || 0), 0);
+}
+
+function formatG(g) {
+  if (g === 0) return '0 g';
+  if (g >= 1000000) return (g / 1000000).toFixed(2) + ' t';
+  if (g >= 1000)    return (g / 1000).toFixed(3) + ' kg';
+  return g.toFixed(1) + ' g';
+}
+
+function formatCustomary(g) {
+  const oz = g / 28.3495;
+  if (oz >= 32000) return ((g / 453.592) / 2000).toFixed(2) + ' tons';
+  if (oz >= 16)    return (oz / 16).toFixed(2) + ' lb';
+  return oz.toFixed(2) + ' oz';
+}
+
+function closestObject(g) {
+  if (g <= 0) return null;
+  let best = null, bestDiff = Infinity;
+  massObjects.forEach(obj => {
+    const d = Math.abs(obj.g - g);
+    if (d < bestDiff) { bestDiff = d; best = obj; }
+  });
+  return best;
+}
+
+function resetMass() {
+  cPan = {}; mPan = {};
+  massObjects.forEach(obj => {
+    const sc = document.getElementById(`sub_c_${obj.id}`);
+    const sm = document.getElementById(`sub_m_${obj.id}`);
+    const cc = document.getElementById(`cnt_c_${obj.id}`);
+    const cm = document.getElementById(`cnt_m_${obj.id}`);
+    if (sc) sc.disabled = true;
+    if (sm) sm.disabled = true;
+    if (cc) cc.textContent = 'L: 0';
+    if (cm) cm.textContent = 'R: 0';
+  });
+  document.getElementById('cBoxes').innerHTML = '';
+  document.getElementById('mBoxes').innerHTML = '';
+  updateScale();
+}
+
+function updateScale() {
+  const cG = panTotalG(cPan);
+  const mG = panTotalG(mPan);
+  const diff = cG - mG; // positive = left heavier
+
+  // PHYSICS: heavier side goes DOWN.
+  // Left heavier (diff > 0) → left end of beam drops → beam tilts so left is lower.
+  // CSS rotate(): positive angle = clockwise = LEFT end goes UP, RIGHT end goes DOWN.
+  // So: left heavier → we need left end DOWN → rotate NEGATIVE (counter-clockwise).
+  const maxTilt = 22;
+  const total = cG + mG;
+  const tiltScale = total > 0 ? Math.min(Math.abs(diff) / total * 2, 1) : 0;
+  const tilt = -(Math.sign(diff)) * tiltScale * maxTilt;
+  document.getElementById('scaleBeam').style.transform = `rotate(${tilt}deg)`;
+
+  // Pan totals in chosen unit system
+  const fmt = (g) => g > 0 ? (showMetric ? formatG(g) : formatCustomary(g)) : '—';
+  document.getElementById('cTotal').textContent = fmt(cG);
+  document.getElementById('mTotal').textContent = fmt(mG);
+
+  // Balance readout
+  const ro     = document.getElementById('balanceReadout');
+  const detail = document.getElementById('balDetail');
+  const equiv  = document.getElementById('balEquiv');
+  const status = ro.querySelector('.bal-status');
+
+  if (cG === 0 && mG === 0) {
+    status.textContent  = '⚖️ Empty — add objects!';
+    status.style.color  = '';
+    detail.textContent  = '';
+    equiv.textContent   = '';
+    ro.style.background = 'linear-gradient(135deg,#f8f4ff,#f0f7ff)';
+    return;
+  }
+
+  const absDiff = Math.abs(diff);
+  const pctOff  = Math.max(cG, mG) > 0 ? (absDiff / Math.max(cG, mG) * 100) : 0;
+
+  if (absDiff < 0.5) {
+    status.textContent  = '🎉 Perfectly balanced!';
+    status.style.color  = '#2a7a2a';
+    detail.textContent  = `Both pans: ${showMetric ? formatG(cG) : formatCustomary(cG)}`;
+    equiv.textContent   = '';
+    ro.style.background = 'linear-gradient(135deg,#e8f8e8,#f0fff0)';
+  } else {
+    const heavierLabel = diff > 0 ? '⬅ Left' : 'Right ➡';
+    const heavyG = diff > 0 ? cG : mG;
+    const lightG = diff > 0 ? mG : cG;
+    status.textContent  = `${heavierLabel} pan is heavier`;
+    status.style.color  = diff > 0 ? 'var(--customary)' : 'var(--metric)';
+
+    const nearest = closestObject(absDiff);
+    let equivText = '';
+    if (nearest) {
+      const ratio    = absDiff / nearest.g;
+      const ratioStr = ratio < 1.05 ? '1' : ratio.toFixed(1);
+      equivText = `Gap ≈ ${ratioStr}× ${nearest.icon} ${nearest.name}  (${showMetric ? formatG(absDiff) : formatCustomary(absDiff)})`;
+    }
+
+    detail.textContent  = `Heavier: ${showMetric ? formatG(heavyG) : formatCustomary(heavyG)}  ·  Lighter: ${showMetric ? formatG(lightG) : formatCustomary(lightG)}  ·  Off by ${pctOff.toFixed(1)}%`;
+    equiv.textContent   = equivText;
+    ro.style.background = 'linear-gradient(135deg,#fff4ee,#eef4ff)';
+  }
+}
+
+// ===== CONVERTER =====
+function conv(type) {
+  const r = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const s = (id, val, unit) => { document.getElementById(id).textContent = isNaN(val) ? '—' : val.toFixed(3).replace(/\.?0+$/, '') + ' ' + unit; };
+  switch(type) {
+    case 'inch': s('inch_out', r('inch_in')*2.54, 'cm'); break;
+    case 'cm': s('cm_out', r('cm_in')/2.54, 'in'); break;
+    case 'mi': s('mi_out', r('mi_in')*1.60934, 'km'); break;
+    case 'km': s('km_out', r('km_in')/1.60934, 'mi'); break;
+    case 'cup_c': s('cup_out', r('cup_in')*236.588, 'mL'); break;
+    case 'qt': s('qt_out', r('qt_in')*0.946353, 'L'); break;
+    case 'gal': s('gal_out', r('gal_in')*3.78541, 'L'); break;
+    case 'L': s('L_out', r('L_in')*1.05669, 'qt'); break;
+    case 'oz': s('oz_out', r('oz_in')*28.3495, 'g'); break;
+    case 'lb': s('lb_out', r('lb_in')*0.453592, 'kg'); break;
+    case 'g': s('g_out', r('g_in')/28.3495, 'oz'); break;
+    case 'kg_c': s('kg_out', r('kg_in')*2.20462, 'lb'); break;
+    case 'F': s('F_out', (r('F_in')-32)*5/9, '°C'); break;
+    case 'C': s('C_out', (r('C_in')*9/5)+32, '°F'); break;
+  }
+}
+
+// ===== QUIZ =====
+const questions = [
+  { q: "How many cups are in 1 gallon?", opts: ["8 cups","12 cups","16 cups","20 cups"], ans: 2 },
+  { q: "1 kilometer is approximately how many miles?", opts: ["0.3 miles","0.6 miles","1.2 miles","2 miles"], ans: 1 },
+  { q: "How many milliliters are in 1 liter?", opts: ["10 mL","100 mL","1,000 mL","10,000 mL"], ans: 2 },
+  { q: "1 pound (lb) = how many ounces?", opts: ["8 oz","12 oz","16 oz","20 oz"], ans: 2 },
+  { q: "Water boils at what temperature in Celsius?", opts: ["0°C","50°C","75°C","100°C"], ans: 3 },
+  { q: "Which is heavier: 1 kilogram or 2 pounds?", opts: ["1 kilogram (≈2.2 lb)","2 pounds (≈0.9 kg)","They are equal","Depends on location"], ans: 0 },
+  { q: "How many feet are in 1 yard?", opts: ["2 feet","3 feet","4 feet","6 feet"], ans: 1 },
+  { q: "1 inch ≈ how many centimeters?", opts: ["1.54 cm","2.54 cm","3.54 cm","5 cm"], ans: 1 },
+  { q: "Which system is used by most countries worldwide?", opts: ["Customary","Metric","Imperial","Both equally"], ans: 1 },
+  { q: "1 quart = how many pints?", opts: ["1 pint","2 pints","3 pints","4 pints"], ans: 1 },
+];
+
+let qIdx = 0, score = 0, answered = false;
+
+function initQuiz() {
+  qIdx = 0; score = 0;
+  shuffleQuiz();
+  renderQ();
+}
+
+function shuffleQuiz() {
+  for (let i = questions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [questions[i], questions[j]] = [questions[j], questions[i]];
+  }
+}
+
+function renderQ() {
+  if (qIdx >= questions.length) {
+    document.getElementById('quizArea').innerHTML = `
+      <div class="quiz-card" style="text-align:center">
+        <p style="font-size:2rem">🎉 Quiz Complete!</p>
+        <p>You scored <strong>${score} out of ${questions.length}</strong></p>
+        <p>${score >= 8 ? "Outstanding! You're a unit master! 🏆" : score >= 6 ? "Great job! Keep practicing! 👍" : "Keep studying — you've got this! 💪"}</p>
+        <button class="pour-btn" style="margin-top:1rem" onclick="initQuiz()">🔄 Play Again</button>
+      </div>`;
+    return;
+  }
+  const q = questions[qIdx];
+  answered = false;
+  document.getElementById('scoreDisplay').textContent = `Score: ${score} / ${qIdx}`;
+  document.getElementById('quizArea').innerHTML = `
+    <div class="quiz-card">
+      <p>Q${qIdx+1}/${questions.length}: ${q.q}</p>
+      <div class="quiz-options">
+        ${q.opts.map((o, i) => `<button class="quiz-opt" onclick="answer(${i})">${o}</button>`).join('')}
+      </div>
+      <div id="qFeedback"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>`;
+}
+
+function answer(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[qIdx];
+  const opts = document.querySelectorAll('.quiz-opt');
+  const fb = document.getElementById('qFeedback');
+  if (i === q.ans) {
+    score++;
+    opts[i].classList.add('correct');
+    fb.className = 'quiz-feedback correct';
+    fb.textContent = '✅ Correct!';
+  } else {
+    opts[i].classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    fb.className = 'quiz-feedback wrong';
+    fb.textContent = `❌ Not quite! The answer is: ${q.opts[q.ans]}`;
+  }
+  opts.forEach(o => o.disabled = true);
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('scoreDisplay').textContent = `Score: ${score} / ${qIdx+1}`;
+}
+
+function nextQ() {
+  qIdx++;
+  renderQ();
+}
+
+// Init on page load
+initLiquid();
+initMassLab();
+</script>
+</body>
+</html>
